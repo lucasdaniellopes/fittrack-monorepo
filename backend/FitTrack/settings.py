@@ -43,6 +43,11 @@ INSTALLED_APPS = [
     'drf_yasg',  
     'rest_framework_simplejwt',  
     'core',
+    'accounts',
+    'workouts',
+    'nutrition',
+    'reports',
+    'notifications',
 ]
 
 MIDDLEWARE = [

@@ -5,8 +5,9 @@ from rest_framework.decorators import action
 from drf_yasg.utils import swagger_auto_schema
 from django.utils import timezone
 from django.contrib.auth.models import User
-from core.models import (Treino, Dieta, TipoPlano, Cliente, HistoricoTreino, 
-                       HistoricoDieta, Exercicio, Refeicao, TrocaExercicio, TrocaRefeicao, Perfil)
+from accounts.models import Perfil, TipoPlano, Cliente
+from workouts.models import Treino, Exercicio, HistoricoTreino, TrocaExercicio
+from nutrition.models import Dieta, Refeicao, HistoricoDieta, TrocaRefeicao
 from .serializers import (TreinoSerializer, DietaSerializer, TipoPlanoSerializer,
                         ClienteSerializer, HistoricoTreinoSerializer, HistoricoDietaSerializer,
                         ExercicioSerializer, RefeicaoSerializer, TrocaExercicioSerializer,

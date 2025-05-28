@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from core.models import (Treino, Dieta, TipoPlano, Cliente, HistoricoTreino, 
-                        HistoricoDieta, Exercicio, Refeicao, TrocaExercicio, TrocaRefeicao, Perfil)
+from accounts.models import Perfil, TipoPlano, Cliente
+from workouts.models import Treino, Exercicio, HistoricoTreino, TrocaExercicio
+from nutrition.models import Dieta, Refeicao, HistoricoDieta, TrocaRefeicao
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False)

@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth.models import User
-from .models import Perfil, Cliente, Personal, Nutricionista
+from accounts.models import Perfil, Cliente, Personal, Nutricionista
 
 
 @receiver(post_save, sender=Perfil)
