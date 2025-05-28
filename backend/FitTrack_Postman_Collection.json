@@ -1,0 +1,1588 @@
+{
+  "info": {
+    "_postman_id": "b5c6d7e8-f9a0-1234-5678-90abcdef1234",
+    "name": "FitTrack API",
+    "description": "Collection para testar a API do sistema FitTrack - Gerenciamento de treinos e dietas personalizados",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Autenticação",
+      "description": "Endpoints para autenticação e gerenciamento de tokens JWT",
+      "item": [
+        {
+          "name": "Obter Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"admin\",\n    \"password\": \"senha123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/token/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "token", ""]
+            },
+            "description": "Obter token JWT para autenticar nas demais requisições"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {\n    var jsonData = pm.response.json();\n    pm.environment.set(\"access_token\", jsonData.access);\n    pm.environment.set(\"refresh_token\", jsonData.refresh);\n    console.log(\"Token salvo com sucesso!\");\n}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Renovar Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"refresh\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/token/refresh/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "token", "refresh", ""]
+            },
+            "description": "Renovar token JWT expirado usando o refresh token"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {\n    var jsonData = pm.response.json();\n    pm.environment.set(\"access_token\", jsonData.access);\n    console.log(\"Token renovado com sucesso!\");\n}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tipos de Plano",
+      "description": "Gerenciamento de tipos de planos (mensal, trimestral, anual)",
+      "item": [
+        {
+          "name": "Listar Tipos de Plano",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tipos-plano/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "tipos-plano", ""]
+            },
+            "description": "Listar todos os tipos de plano disponíveis"
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Tipo de Plano",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Plano Mensal\",\n    \"descricao\": \"Acesso por 30 dias a todos os recursos\",\n    \"preco\": 99.90,\n    \"duracao_dias\": 30,\n    \"intervalo_atualizacao_treino_dieta\": 15,\n    \"limite_trocas_exercicios\": 2,\n    \"limite_trocas_refeicoes\": 2,\n    \"periodo_trocas_dias\": 5,\n    \"trocas_ilimitadas\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/tipos-plano/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "tipos-plano", ""]
+            },
+            "description": "Criar um novo tipo de plano com regras de negócio específicas"
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Plano Básico",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Plano Básico\",\n    \"descricao\": \"Plano com recursos básicos para iniciantes\",\n    \"preco\": 59.90,\n    \"duracao_dias\": 30,\n    \"intervalo_atualizacao_treino_dieta\": 30,\n    \"limite_trocas_exercicios\": 1,\n    \"limite_trocas_refeicoes\": 1,\n    \"periodo_trocas_dias\": 3,\n    \"trocas_ilimitadas\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/tipos-plano/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "tipos-plano", ""]
+            },
+            "description": "Criar o plano básico com limitações nas trocas e atualizações"
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Plano Pro",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Plano Pro\",\n    \"descricao\": \"Plano premium com recursos avançados e maior flexibilidade\",\n    \"preco\": 129.90,\n    \"duracao_dias\": 30,\n    \"intervalo_atualizacao_treino_dieta\": 7,\n    \"limite_trocas_exercicios\": 5,\n    \"limite_trocas_refeicoes\": 5,\n    \"periodo_trocas_dias\": 7,\n    \"trocas_ilimitadas\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/tipos-plano/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "tipos-plano", ""]
+            },
+            "description": "Criar o plano Pro com trocas ilimitadas e atualizações frequentes"
+          },
+          "response": []
+        },
+        {
+          "name": "Obter Tipo de Plano",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tipos-plano/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "tipos-plano", "1", ""]
+            },
+            "description": "Obter detalhes de um tipo de plano específico pelo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar Tipo de Plano",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"preco\": 109.90,\n    \"descricao\": \"Acesso por 30 dias a todos os recursos com suporte premium\",\n    \"intervalo_atualizacao_treino_dieta\": 10,\n    \"limite_trocas_exercicios\": 3,\n    \"limite_trocas_refeicoes\": 3\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/tipos-plano/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "tipos-plano", "1", ""]
+            },
+            "description": "Atualizar parcialmente um tipo de plano existente pelo ID, incluindo regras de negócio"
+          },
+          "response": []
+        },
+        {
+          "name": "Excluir Tipo de Plano",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tipos-plano/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "tipos-plano", "1", ""]
+            },
+            "description": "Excluir um tipo de plano pelo ID"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Treinos",
+      "description": "Gerenciamento de treinos personalizados",
+      "item": [
+        {
+          "name": "Listar Treinos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/treinos/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "treinos", ""]
+            },
+            "description": "Listar todos os treinos cadastrados"
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Treino",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Treino A - Peito e Tríceps\",\n    \"descricao\": \"4x12 Supino Reto\\n4x12 Supino Inclinado\\n4x12 Crucifixo\\n4x12 Tríceps Corda\\n4x12 Tríceps Francês\",\n    \"duracao\": 60,\n    \"cliente\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/treinos/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "treinos", ""]
+            },
+            "description": "Criar um novo treino personalizado"
+          },
+          "response": []
+        },
+        {
+          "name": "Obter Treino",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/treinos/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "treinos", "1", ""]
+            },
+            "description": "Obter detalhes de um treino específico pelo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar Treino",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"descricao\": \"4x15 Supino Reto\\n4x15 Supino Inclinado\\n4x15 Crucifixo\\n4x15 Tríceps Corda\\n4x15 Tríceps Francês\",\n    \"duracao\": 75\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/treinos/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "treinos", "1", ""]
+            },
+            "description": "Atualizar parcialmente um treino existente pelo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Excluir Treino",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/treinos/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "treinos", "1", ""]
+            },
+            "description": "Excluir um treino pelo ID"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Dietas",
+      "description": "Gerenciamento de dietas personalizadas",
+      "item": [
+        {
+          "name": "Listar Dietas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/dietas/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "dietas", ""]
+            },
+            "description": "Listar todas as dietas cadastradas"
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Dieta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Dieta Low Carb\",\n    \"descricao\": \"Café da manhã: 2 ovos e abacate\\nLanche: Whey protein com água\\nAlmoço: Frango grelhado com legumes\\nLanche: Castanhas\\nJantar: Peixe com salada\",\n    \"calorias\": 1800,\n    \"cliente\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/dietas/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "dietas", ""]
+            },
+            "description": "Criar uma nova dieta personalizada"
+          },
+          "response": []
+        },
+        {
+          "name": "Obter Dieta",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/dietas/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "dietas", "1", ""]
+            },
+            "description": "Obter detalhes de uma dieta específica pelo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar Dieta",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"descricao\": \"Café da manhã: 3 ovos e abacate\\nLanche: Whey protein com água\\nAlmoço: Frango grelhado com legumes\\nLanche: Castanhas e queijo\\nJantar: Peixe com salada\",\n    \"calorias\": 2000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/dietas/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "dietas", "1", ""]
+            },
+            "description": "Atualizar parcialmente uma dieta existente pelo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Excluir Dieta",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/dietas/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "dietas", "1", ""]
+            },
+            "description": "Excluir uma dieta pelo ID"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Clientes",
+      "description": "Gerenciamento de clientes e suas informações pessoais",
+      "item": [
+        {
+          "name": "Listar Clientes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/clientes/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "clientes", ""]
+            },
+            "description": "Listar todos os clientes cadastrados"
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Cliente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"João Silva\",\n    \"email\": \"joao@example.com\",\n    \"telefone\": \"(83) 99999-9999\",\n    \"data_nascimento\": \"1990-01-01\",\n    \"altura\": 175,\n    \"peso\": 80,\n    \"tipo_plano\": 1,\n    \"data_inicio_plano\": \"2025-03-31\",\n    \"treino_atual\": 1,\n    \"dieta_atual\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/clientes/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "clientes", ""]
+            },
+            "description": "Criar um novo cliente"
+          },
+          "response": []
+        },
+        {
+          "name": "Obter Cliente",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/clientes/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "clientes", "1", ""]
+            },
+            "description": "Obter detalhes de um cliente específico pelo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar Cliente",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"telefone\": \"(83) 99999-8888\",\n    \"peso\": 78\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/clientes/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "clientes", "1", ""]
+            },
+            "description": "Atualizar parcialmente um cliente existente pelo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Excluir Cliente",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/clientes/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "clientes", "1", ""]
+            },
+            "description": "Excluir um cliente pelo ID"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Histórico de Treinos",
+      "description": "Registro histórico de treinos dos clientes",
+      "item": [
+        {
+          "name": "Listar Históricos de Treinos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/historico-treinos/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "historico-treinos", ""]
+            },
+            "description": "Listar todos os históricos de treinos cadastrados"
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Histórico de Treino",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"cliente\": 1,\n    \"treino\": 1,\n    \"data_inicio\": \"2025-01-01\",\n    \"data_fim\": \"2025-02-01\",\n    \"observacoes\": \"Cliente evoluiu bem com o treino, aumentou carga em todos os exercícios.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/historico-treinos/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "historico-treinos", ""]
+            },
+            "description": "Criar um novo registro de histórico de treino"
+          },
+          "response": []
+        },
+        {
+          "name": "Obter Histórico de Treino",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/historico-treinos/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "historico-treinos", "1", ""]
+            },
+            "description": "Obter detalhes de um histórico de treino específico pelo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar Histórico de Treino",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"observacoes\": \"Cliente evoluiu muito bem com o treino, aumentou carga em todos os exercícios e melhorou condicionamento.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/historico-treinos/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "historico-treinos", "1", ""]
+            },
+            "description": "Atualizar parcialmente um histórico de treino existente pelo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Excluir Histórico de Treino",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/historico-treinos/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "historico-treinos", "1", ""]
+            },
+            "description": "Excluir um histórico de treino pelo ID"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Histórico de Dietas",
+      "description": "Registro histórico de dietas dos clientes",
+      "item": [
+        {
+          "name": "Listar Históricos de Dietas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/historico-dietas/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "historico-dietas", ""]
+            },
+            "description": "Listar todos os históricos de dietas cadastrados"
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Histórico de Dieta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"cliente\": 1,\n    \"dieta\": 1,\n    \"data_inicio\": \"2025-01-01\",\n    \"data_fim\": \"2025-02-01\",\n    \"observacoes\": \"Cliente seguiu bem a dieta, perdeu 3kg no período.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/historico-dietas/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "historico-dietas", ""]
+            },
+            "description": "Criar um novo registro de histórico de dieta"
+          },
+          "response": []
+        },
+        {
+          "name": "Obter Histórico de Dieta",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/historico-dietas/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "historico-dietas", "1", ""]
+            },
+            "description": "Obter detalhes de um histórico de dieta específico pelo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar Histórico de Dieta",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"observacoes\": \"Cliente seguiu muito bem a dieta, perdeu 5kg no período e melhorou composição corporal.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/historico-dietas/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "historico-dietas", "1", ""]
+            },
+            "description": "Atualizar parcialmente um histórico de dieta existente pelo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Excluir Histórico de Dieta",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/historico-dietas/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "historico-dietas", "1", ""]
+            },
+            "description": "Excluir um histórico de dieta pelo ID"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Exercícios",
+      "description": "Gerenciamento de exercícios dos treinos",
+      "item": [
+        {
+          "name": "Listar Exercícios",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/exercicios/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "exercicios", ""]
+            },
+            "description": "Listar todos os exercícios cadastrados"
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Exercício",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Supino Reto\",\n    \"descricao\": \"4x12 repetições com 60kg\",\n    \"treino\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/exercicios/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "exercicios", ""]
+            },
+            "description": "Criar um novo exercício"
+          },
+          "response": []
+        },
+        {
+          "name": "Obter Exercício",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/exercicios/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "exercicios", "1", ""]
+            },
+            "description": "Obter detalhes de um exercício específico pelo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar Exercício",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"descricao\": \"4x15 repetições com 70kg\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/exercicios/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "exercicios", "1", ""]
+            },
+            "description": "Atualizar parcialmente um exercício existente pelo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Excluir Exercício",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/exercicios/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "exercicios", "1", ""]
+            },
+            "description": "Excluir um exercício pelo ID"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Refeições",
+      "description": "Gerenciamento de refeições das dietas",
+      "item": [
+        {
+          "name": "Listar Refeições",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/refeicoes/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "refeicoes", ""]
+            },
+            "description": "Listar todas as refeições cadastradas"
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Refeição",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nome\": \"Café da Manhã\",\n    \"descricao\": \"2 ovos, 1 fatia de pão integral, 1 colher de manteiga\",\n    \"calorias\": 350,\n    \"dieta\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/refeicoes/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "refeicoes", ""]
+            },
+            "description": "Criar uma nova refeição"
+          },
+          "response": []
+        },
+        {
+          "name": "Obter Refeição",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/refeicoes/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "refeicoes", "1", ""]
+            },
+            "description": "Obter detalhes de uma refeição específica pelo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar Refeição",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"descricao\": \"3 ovos, 1 fatia de pão integral, 1 colher de manteiga\",\n    \"calorias\": 400\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/refeicoes/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "refeicoes", "1", ""]
+            },
+            "description": "Atualizar parcialmente uma refeição existente pelo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Excluir Refeição",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/refeicoes/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "refeicoes", "1", ""]
+            },
+            "description": "Excluir uma refeição pelo ID"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Trocas de Exercícios",
+      "description": "Gerenciamento de trocas de exercícios",
+      "item": [
+        {
+          "name": "Listar Trocas de Exercícios",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/trocas-exercicios/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "trocas-exercicios", ""]
+            },
+            "description": "Listar todas as trocas de exercícios cadastradas"
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Troca de Exercício",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"cliente\": 1,\n    \"exercicio_antigo\": 1,\n    \"exercicio_novo\": 2,\n    \"motivo\": \"Dor no ombro ao realizar o exercício\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/trocas-exercicios/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "trocas-exercicios", ""]
+            },
+            "description": "Criar uma nova troca de exercício"
+          },
+          "response": []
+        },
+        {
+          "name": "Obter Troca de Exercício",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/trocas-exercicios/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "trocas-exercicios", "1", ""]
+            },
+            "description": "Obter detalhes de uma troca de exercício específica pelo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar Troca de Exercício",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"motivo\": \"Dor persistente no ombro ao realizar o exercício\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/trocas-exercicios/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "trocas-exercicios", "1", ""]
+            },
+            "description": "Atualizar parcialmente uma troca de exercício existente pelo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Excluir Troca de Exercício",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/trocas-exercicios/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "trocas-exercicios", "1", ""]
+            },
+            "description": "Excluir uma troca de exercício pelo ID"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Trocas de Refeições",
+      "description": "Gerenciamento de trocas de refeições",
+      "item": [
+        {
+          "name": "Listar Trocas de Refeições",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/trocas-refeicoes/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "trocas-refeicoes", ""]
+            },
+            "description": "Listar todas as trocas de refeições cadastradas"
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Troca de Refeição",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"cliente\": 1,\n    \"refeicao_antiga\": 1,\n    \"refeicao_nova\": 2,\n    \"motivo\": \"Intolerância a lactose\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/trocas-refeicoes/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "trocas-refeicoes", ""]
+            },
+            "description": "Criar uma nova troca de refeição"
+          },
+          "response": []
+        },
+        {
+          "name": "Obter Troca de Refeição",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/trocas-refeicoes/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "trocas-refeicoes", "1", ""]
+            },
+            "description": "Obter detalhes de uma troca de refeição específica pelo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar Troca de Refeição",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"motivo\": \"Alergia a amendoim\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/trocas-refeicoes/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "trocas-refeicoes", "1", ""]
+            },
+            "description": "Atualizar parcialmente uma troca de refeição existente pelo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Excluir Troca de Refeição",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/trocas-refeicoes/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "trocas-refeicoes", "1", ""]
+            },
+            "description": "Excluir uma troca de refeição pelo ID"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Usuários",
+      "description": "Gerenciamento de usuários do sistema",
+      "item": [
+        {
+          "name": "Listar Usuários",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/usuarios/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "usuarios", ""]
+            },
+            "description": "Listar todos os usuários (apenas para administradores)"
+          },
+          "response": []
+        },
+        {
+          "name": "Obter Usuário Atual",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/usuarios/me/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "usuarios", "me", ""]
+            },
+            "description": "Obter informações do usuário atual autenticado"
+          },
+          "response": []
+        },
+        {
+          "name": "Obter Usuário por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/usuarios/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "usuarios", "1", ""]
+            },
+            "description": "Obter informações de um usuário específico pelo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Usuário",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"novo_usuario\",\n    \"email\": \"usuario@exemplo.com\",\n    \"first_name\": \"Nome\",\n    \"last_name\": \"Sobrenome\",\n    \"password\": \"senha123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/usuarios/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "usuarios", ""]
+            },
+            "description": "Criar um novo usuário (apenas para administradores)"
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar Usuário",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"atualizado@exemplo.com\",\n    \"first_name\": \"Nome Atualizado\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/usuarios/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "usuarios", "1", ""]
+            },
+            "description": "Atualizar parcialmente um usuário existente"
+          },
+          "response": []
+        },
+        {
+          "name": "Excluir Usuário",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/usuarios/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "usuarios", "1", ""]
+            },
+            "description": "Excluir um usuário pelo ID (apenas para administradores)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Perfis",
+      "description": "Gerenciamento de perfis de usuários (admin, nutricionista, personal, cliente)",
+      "item": [
+        {
+          "name": "Listar Perfis",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/perfis/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "perfis", ""]
+            },
+            "description": "Listar todos os perfis (apenas para administradores)"
+          },
+          "response": []
+        },
+        {
+          "name": "Obter Perfil por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/perfis/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "perfis", "1", ""]
+            },
+            "description": "Obter informações de um perfil específico pelo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Perfil",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"usuario\": 1,\n    \"tipo\": \"cliente\",\n    \"telefone\": \"(99) 99999-9999\",\n    \"data_nascimento\": \"1990-01-01\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/perfis/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "perfis", ""]
+            },
+            "description": "Criar um novo perfil (apenas para administradores)"
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar Perfil",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"telefone\": \"(88) 88888-8888\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/perfis/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "perfis", "1", ""]
+            },
+            "description": "Atualizar parcialmente um perfil existente"
+          },
+          "response": []
+        },
+        {
+          "name": "Excluir Perfil",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/perfis/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "perfis", "1", ""]
+            },
+            "description": "Excluir um perfil pelo ID (apenas para administradores)"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    }
+  ]
+}
