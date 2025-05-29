@@ -1,8 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from accounts.models import Perfil, TipoPlano, Cliente
-from workouts.models import Treino, Exercicio, HistoricoTreino, TrocaExercicio
-from nutrition.models import Dieta, Refeicao, HistoricoDieta, TrocaRefeicao
+from accounts.models import Perfil, TipoPlano, Cliente, Personal, Nutricionista
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False)
@@ -40,7 +38,7 @@ class UserSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         password = validated_data.pop('password', None)
-        tipo_perfil = validated_data.pop('tipo_perfil', 'cliente')  # Remove tipo_perfil do validated_data
+        tipo_perfil = validated_data.pop('tipo_perfil', 'cliente')
         
         user = User(**validated_data)
         if password:
@@ -73,20 +71,6 @@ class PerfilSerializer(serializers.ModelSerializer):
         model = Perfil
         fields = ['id', 'usuario', 'usuario_details', 'tipo', 'tipo_display', 'telefone', 'data_nascimento']
 
-class TreinoSerializer(serializers.ModelSerializer):
-    cliente_nome = serializers.CharField(source='cliente.nome', read_only=True)
-    
-    class Meta:
-        model = Treino
-        fields = ['id', 'nome', 'descricao', 'duracao', 'cliente', 'cliente_nome', 'created_at', 'updated_at']
-
-class DietaSerializer(serializers.ModelSerializer):
-    cliente_nome = serializers.CharField(source='cliente.nome', read_only=True)
-    
-    class Meta:
-        model = Dieta
-        fields = ['id', 'nome', 'descricao', 'calorias', 'cliente', 'cliente_nome', 'created_at', 'updated_at']
-
 class TipoPlanoSerializer(serializers.ModelSerializer):
     class Meta:
         model = TipoPlano
@@ -103,44 +87,16 @@ class ClienteSerializer(serializers.ModelSerializer):
                  'data_ultimo_treino', 'data_ultima_dieta',
                  'trocas_exercicios_restantes', 'trocas_refeicoes_restantes', 'perfil']
 
-class HistoricoTreinoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = HistoricoTreino
-        fields = '__all__'
-
-class HistoricoDietaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = HistoricoDieta
-        fields = '__all__'
-
-class ExercicioSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Exercicio
-        fields = '__all__'
-
-class RefeicaoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Refeicao
-        fields = '__all__'
-
-class TrocaExercicioSerializer(serializers.ModelSerializer):
-    cliente_nome = serializers.CharField(source='cliente.nome', read_only=True)
-    exercicio_antigo_nome = serializers.CharField(source='exercicio_antigo.nome', read_only=True)
-    exercicio_novo_nome = serializers.CharField(source='exercicio_novo.nome', read_only=True)
-    aprovado_por_nome = serializers.CharField(source='aprovado_por.username', read_only=True)
-    status_display = serializers.CharField(source='get_status_display', read_only=True)
+class PersonalSerializer(serializers.ModelSerializer):
+    perfil = PerfilSerializer(read_only=True)
     
     class Meta:
-        model = TrocaExercicio
-        fields = '__all__'
+        model = Personal
+        fields = ['id', 'nome', 'email', 'telefone', 'especialidade', 'perfil', 'created_at', 'updated_at']
 
-class TrocaRefeicaoSerializer(serializers.ModelSerializer):
-    cliente_nome = serializers.CharField(source='cliente.nome', read_only=True)
-    refeicao_antiga_nome = serializers.CharField(source='refeicao_antiga.nome', read_only=True)
-    refeicao_nova_nome = serializers.CharField(source='refeicao_nova.nome', read_only=True)
-    aprovado_por_nome = serializers.CharField(source='aprovado_por.username', read_only=True)
-    status_display = serializers.CharField(source='get_status_display', read_only=True)
+class NutricionistaSerializer(serializers.ModelSerializer):
+    perfil = PerfilSerializer(read_only=True)
     
     class Meta:
-        model = TrocaRefeicao
-        fields = '__all__'
+        model = Nutricionista
+        fields = ['id', 'nome', 'email', 'telefone', 'especialidade', 'crn', 'perfil', 'created_at', 'updated_at']
