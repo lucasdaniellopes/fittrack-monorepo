@@ -127,6 +127,35 @@ O FitTrack implementa um sistema de controle de acesso baseado em papéis (RBAC)
 - **Personal**: Gerencia treinos e exercícios
 - **Cliente**: Visualiza seus treinos e dietas, solicita trocas conforme seu plano
 
+
+## 🧪 Executando Testes
+
+### Instalação das Dependências de Teste
+```bash
+pip install -r requirements-test.txt
+```
+
+### Executar Todos os Testes
+```bash
+python manage.py test core.tests --verbosity=2
+```
+
+### Testes por Categoria
+```bash
+# Testes de API
+python manage.py test core.tests.test_api_views
+
+# Testes de Modelos  
+python manage.py test core.tests.test_models
+
+# Testes de Permissões
+python manage.py test core.tests.test_permissions
+
+# Testes de Signals
+python manage.py test core.tests.test_signals
+```
+
+
 ## Contribuição
 
 Contribuições são bem-vindas! Para contribuir:
@@ -137,6 +166,4 @@ Contribuições são bem-vindas! Para contribuir:
 4. Push para a branch (`git push origin feature/nova-feature`)
 5. Crie um novo Pull Request
 
-## Licença
 
-Este projeto está licenciado sob a licença MIT - veja o arquivo LICENSE para detalhes.
