@@ -31,6 +31,7 @@ urlpatterns = [
     # Authentication
     path('api/v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/v1/auth/', include('accounts.api.v1.routers')),
     
     # Main API - all endpoints consolidated
     path('api/v1/', include('core.api.v1.routers')),

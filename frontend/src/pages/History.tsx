@@ -52,7 +52,9 @@ const History = () => {
     const fetchWorkoutHistory = async () => {
       setLoadingWorkouts(true);
       try {
+        console.log('Fetching workout history...');
         const response = await api.get(`historico-treinos/?page=${workoutPage}&page_size=${itemsPerPage}`);
+        console.log('Workout history response:', response.data);
         setWorkoutHistory(response.data.results || []);
         setWorkoutTotalPages(Math.ceil((response.data.count || 0) / itemsPerPage));
       } catch (error) {
@@ -75,7 +77,9 @@ const History = () => {
     const fetchDietHistory = async () => {
       setLoadingDiets(true);
       try {
+        console.log('Fetching diet history...');
         const response = await api.get(`historico-dietas/?page=${dietPage}&page_size=${itemsPerPage}`);
+        console.log('Diet history response:', response.data);
         setDietHistory(response.data.results || []);
         setDietTotalPages(Math.ceil((response.data.count || 0) / itemsPerPage));
       } catch (error) {
@@ -96,40 +100,68 @@ const History = () => {
   // Format date for display
   const formatDate = (dateString: string) => {
     try {
-      return format(parseISO(dateString), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
-    } catch {
-      return dateString;
+      if (!dateString) return 'Data não disponível';
+      const date = parseISO(dateString);
+      if (isNaN(date.getTime())) return dateString;
+      return format(date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+    } catch (error) {
+      console.error('Error formatting date:', error, dateString);
+      return dateString || 'Data inválida';
     }
   };
   
   // Filter workouts based on search query, date and type
   const filteredWorkouts = workoutHistory.filter(history => {
-    // Search filter
-    const matchesSearch = 
-      history.treino.nome.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      history.treino.descricao.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (history.observacoes && history.observacoes.toLowerCase().includes(searchQuery.toLowerCase()));
-    
-    // Date filter
-    const matchesDate = !dateFilter || 
-      format(parseISO(history.data_inicio), "yyyy-MM-dd") === format(dateFilter, "yyyy-MM-dd");
-    
-    return matchesSearch && matchesDate;
+    try {
+      // Search filter
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch = !searchQuery || 
+        (history.treino?.nome?.toLowerCase().includes(searchLower)) || 
+        (history.treino?.descricao?.toLowerCase().includes(searchLower)) ||
+        (history.observacoes?.toLowerCase().includes(searchLower));
+      
+      // Date filter
+      const matchesDate = !dateFilter || (() => {
+        try {
+          const historyDate = parseISO(history.data_inicio);
+          return format(historyDate, "yyyy-MM-dd") === format(dateFilter, "yyyy-MM-dd");
+        } catch {
+          return false;
+        }
+      })();
+      
+      return matchesSearch && matchesDate;
+    } catch (error) {
+      console.error('Error filtering workout:', error, history);
+      return false;
+    }
   });
   
   // Filter diets based on search query and date
   const filteredDiets = dietHistory.filter(history => {
-    // Search filter
-    const matchesSearch = 
-      history.dieta.nome.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      history.dieta.descricao.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (history.observacoes && history.observacoes.toLowerCase().includes(searchQuery.toLowerCase()));
-    
-    // Date filter
-    const matchesDate = !dateFilter || 
-      format(parseISO(history.data_inicio), "yyyy-MM-dd") === format(dateFilter, "yyyy-MM-dd");
-    
-    return matchesSearch && matchesDate;
+    try {
+      // Search filter
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch = !searchQuery || 
+        (history.dieta?.nome?.toLowerCase().includes(searchLower)) || 
+        (history.dieta?.descricao?.toLowerCase().includes(searchLower)) ||
+        (history.observacoes?.toLowerCase().includes(searchLower));
+      
+      // Date filter
+      const matchesDate = !dateFilter || (() => {
+        try {
+          const historyDate = parseISO(history.data_inicio);
+          return format(historyDate, "yyyy-MM-dd") === format(dateFilter, "yyyy-MM-dd");
+        } catch {
+          return false;
+        }
+      })();
+      
+      return matchesSearch && matchesDate;
+    } catch (error) {
+      console.error('Error filtering diet:', error, history);
+      return false;
+    }
   });
 
   const renderWorkoutHistory = () => {
@@ -168,7 +200,7 @@ const History = () => {
             <Card key={history.id}>
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl">{history.treino.nome}</CardTitle>
+                  <CardTitle className="text-xl">{history.treino?.nome || 'Treino sem nome'}</CardTitle>
                   <div className="flex flex-col items-end">
                     <span className="text-sm text-muted-foreground">
                       Início: {formatDate(history.data_inicio)}
@@ -183,17 +215,17 @@ const History = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">{history.treino.descricao}</p>
+                  <p className="text-sm text-muted-foreground">{history.treino?.descricao || 'Sem descrição'}</p>
                   
                   <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
                     <span className="flex items-center gap-1">
                       <Dumbbell className="h-4 w-4" />
-                      {history.treino.exercicios?.length || 0} exercícios
+                      {history.treino?.exercicios?.length || 0} exercícios
                     </span>
-                    <span>Duração: {history.treino.duracao} min</span>
+                    <span>Duração: {history.treino?.duracao || 0} min</span>
                   </div>
                   
-                  {history.treino.exercicios && history.treino.exercicios.length > 0 && (
+                  {history.treino?.exercicios && history.treino.exercicios.length > 0 && (
                     <div className="mt-2">
                       <h4 className="font-medium text-sm">Exercícios:</h4>
                       <ul className="text-sm text-muted-foreground ml-4">
@@ -283,7 +315,7 @@ const History = () => {
             <Card key={history.id}>
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl">{history.dieta.nome}</CardTitle>
+                  <CardTitle className="text-xl">{history.dieta?.nome || 'Dieta sem nome'}</CardTitle>
                   <div className="flex flex-col items-end">
                     <span className="text-sm text-muted-foreground">
                       Início: {formatDate(history.data_inicio)}
@@ -298,14 +330,14 @@ const History = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">{history.dieta.descricao}</p>
+                  <p className="text-sm text-muted-foreground">{history.dieta?.descricao || 'Sem descrição'}</p>
                   
                   <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
-                    <span>{history.dieta.refeicoes?.length || 0} refeições</span>
-                    <span>{history.dieta.calorias} calorias totais</span>
+                    <span>{history.dieta?.refeicoes?.length || 0} refeições</span>
+                    <span>{history.dieta?.calorias || 0} calorias totais</span>
                   </div>
                   
-                  {history.dieta.refeicoes && history.dieta.refeicoes.length > 0 && (
+                  {history.dieta?.refeicoes && history.dieta.refeicoes.length > 0 && (
                     <div className="mt-2">
                       <h4 className="font-medium text-sm">Refeições:</h4>
                       <ul className="text-sm text-muted-foreground ml-4">
@@ -385,7 +417,13 @@ const History = () => {
               className="w-full sm:w-[220px] justify-start text-left font-normal"
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {dateFilter ? format(dateFilter, "PPP") : "Filtrar por data"}
+              {dateFilter ? (() => {
+                try {
+                  return format(dateFilter, "PPP", { locale: ptBR });
+                } catch {
+                  return dateFilter.toLocaleDateString('pt-BR');
+                }
+              })() : "Filtrar por data"}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0">

@@ -34,50 +34,61 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [perfil, setPerfil] = useState<Perfil | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const loadUserData = async () => {
+    try {
+      const userResponse = await api.get('/usuarios/me/');
+      setUser(userResponse.data);
+      
+      // Buscar perfil do usuário
+      try {
+        const perfilResponse = await api.get('/perfis/');
+        console.log('Perfil Response:', perfilResponse.data);
+        const perfis = perfilResponse.data.results || perfilResponse.data;
+        
+        // Para usuários não-staff, a API retorna apenas seu próprio perfil
+        let userPerfil = null;
+        if (userResponse.data.is_staff) {
+          userPerfil = perfis.find((p: Perfil) => p.usuario === userResponse.data.id);
+        } else if (perfis.length > 0) {
+          // Para usuários normais, pegar o primeiro (e único) perfil
+          userPerfil = perfis[0];
+        }
+        
+        console.log('Found user perfil:', userPerfil);
+        if (userPerfil) {
+          setPerfil(userPerfil);
+        } else {
+          console.error('No perfil found for user:', userResponse.data.id);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar perfil:', error);
+      }
+    } catch (error: any) {
+      console.error('Error loading user data:', error.response?.status, error.response?.data);
+      if (error.response?.status === 401) {
+        // Token inválido ou expirado
+        try {
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+        } catch (e) {
+          // Ignore storage errors
+        }
+        setUser(null);
+        setPerfil(null);
+      }
+      throw error;
+    }
+  };
+
   useEffect(() => {
     const loadUser = async () => {
       try {
         const token = localStorage.getItem('access_token');
         if (token) {
           try {
-            const userResponse = await api.get('/usuarios/me/');
-            setUser(userResponse.data);
-            
-            // Buscar perfil do usuário
-            try {
-              const perfilResponse = await api.get('/perfis/');
-              console.log('Perfil Response:', perfilResponse.data);
-              const perfis = perfilResponse.data.results || perfilResponse.data;
-              
-              // For non-staff users, the API only returns their own perfil
-              let userPerfil = null;
-              if (userResponse.data.is_staff) {
-                userPerfil = perfis.find((p: Perfil) => p.usuario === userResponse.data.id);
-              } else if (perfis.length > 0) {
-                // For regular users, take the first (and only) perfil
-                userPerfil = perfis[0];
-              }
-              
-              console.log('Found user perfil:', userPerfil);
-              if (userPerfil) {
-                setPerfil(userPerfil);
-              } else {
-                console.error('No perfil found for user:', userResponse.data.id);
-              }
-            } catch (error) {
-              console.error('Erro ao buscar perfil:', error);
-            }
-          } catch (error: any) {
-            console.error('Error loading user:', error.response?.status, error.response?.data);
-            if (error.response?.status === 401) {
-              // Token inválido ou expirado
-              try {
-                localStorage.removeItem('access_token');
-                localStorage.removeItem('refresh_token');
-              } catch (e) {
-                // Ignore storage errors
-              }
-            }
+            await loadUserData();
+          } catch (error) {
+            // Erro já tratado em loadUserData
           }
         }
       } catch (error) {
@@ -101,35 +112,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         console.error('Cannot store tokens:', e);
       }
       
-      const userResponse = await api.get('/usuarios/me/');
-      setUser(userResponse.data);
+      // Aguardar um pequeno delay para garantir que o token seja usado na próxima requisição
+      await new Promise(resolve => setTimeout(resolve, 100));
       
-      // Buscar perfil do usuário
-      try {
-        const perfilResponse = await api.get('/perfis/');
-        console.log('Login - Perfil Response:', perfilResponse.data);
-        const perfis = perfilResponse.data.results || perfilResponse.data;
-        
-        // For non-staff users, the API only returns their own perfil
-        let userPerfil = null;
-        if (userResponse.data.is_staff) {
-          userPerfil = perfis.find((p: Perfil) => p.usuario === userResponse.data.id);
-        } else if (perfis.length > 0) {
-          // For regular users, take the first (and only) perfil
-          userPerfil = perfis[0];
-        }
-        
-        console.log('Login - Found user perfil:', userPerfil);
-        if (userPerfil) {
-          setPerfil(userPerfil);
-        } else {
-          console.error('Login - No perfil found for user:', userResponse.data.id);
-        }
-      } catch (error) {
-        console.error('Erro ao buscar perfil:', error);
-      }
+      // Buscar dados do usuário após login bem-sucedido
+      await loadUserData();
+      
     } catch (error: any) {
       console.error('Login error:', error);
+      // Limpar tokens em caso de erro
+      try {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+      } catch (e) {
+        // Ignore storage errors
+      }
       throw new Error(error.response?.data?.detail || 'Erro ao fazer login');
     }
   };

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Autenticação - FitTrack</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success {
+            color: #28a745;
+        }
+        .error {
+            color: #dc3545;
+        }
+        .info {
+            color: #17a2b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔑 Teste de Autenticação - FitTrack</h1>
+        
+        <div class="form-group">
+            <label for="username">Usuário:</label>
+            <input type="text" id="username" value="admin" placeholder="Digite o nome de usuário">
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Senha:</label>
+            <input type="password" id="password" value="admin123" placeholder="Digite a senha">
+        </div>
+        
+        <button onclick="testLogin()" id="loginBtn">🚪 Testar Login</button>
+        <button onclick="testMe()" id="meBtn" disabled>👤 Testar /me</button>
+        <button onclick="testRefresh()" id="refreshBtn" disabled>🔄 Testar Refresh</button>
+        <button onclick="clearResults()">🗑️ Limpar</button>
+        
+        <div id="results" class="results">
+📋 Logs aparecerão aqui...
+
+💡 Instruções:
+1. Digite suas credenciais acima
+2. Clique em "Testar Login" para fazer login
+3. Se o login for bem-sucedido, teste os outros endpoints
+4. Verifique o console do navegador para mais detalhes
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000/api/v1';
+        let currentTokens = null;
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            results.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            results.scrollTop = results.scrollHeight;
+            console.log(message);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '📋 Logs limpos...\n';
+        }
+
+        async function testLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                log('❌ Por favor, preencha usuário e senha', 'error');
+                return;
+            }
+            
+            const loginBtn = document.getElementById('loginBtn');
+            loginBtn.disabled = true;
+            loginBtn.textContent = '🔄 Fazendo login...';
+            
+            try {
+                log('🔐 Iniciando login...', 'info');
+                
+                const response = await fetch(`${API_URL}/token/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorData}`);
+                }
+                
+                const data = await response.json();
+                currentTokens = data;
+                
+                log('✅ Login realizado com sucesso!', 'success');
+                log(`📝 Access Token: ${data.access.substring(0, 50)}...`, 'info');
+                log(`📝 Refresh Token: ${data.refresh.substring(0, 50)}...`, 'info');
+                
+                // Armazenar tokens no localStorage para compatibilidade
+                localStorage.setItem('access_token', data.access);
+                localStorage.setItem('refresh_token', data.refresh);
+                
+                // Habilitar outros botões
+                document.getElementById('meBtn').disabled = false;
+                document.getElementById('refreshBtn').disabled = false;
+                
+                // Testar automaticamente o endpoint /me
+                setTimeout(() => testMe(), 1000);
+                
+            } catch (error) {
+                log(`❌ Erro no login: ${error.message}`, 'error');
+                console.error('Login error:', error);
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = '🚪 Testar Login';
+            }
+        }
+
+        async function testMe() {
+            if (!currentTokens) {
+                log('❌ Faça login primeiro', 'error');
+                return;
+            }
+            
+            const meBtn = document.getElementById('meBtn');
+            meBtn.disabled = true;
+            meBtn.textContent = '🔄 Carregando...';
+            
+            try {
+                log('👤 Buscando dados do usuário (/usuarios/me/)...', 'info');
+                
+                const response = await fetch(`${API_URL}/usuarios/me/`, {
+                    headers: {
+                        'Authorization': `Bearer ${currentTokens.access}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorData}`);
+                }
+                
+                const userData = await response.json();
+                log('✅ Dados do usuário obtidos com sucesso!', 'success');
+                log(`📋 Usuário: ${JSON.stringify(userData, null, 2)}`, 'info');
+                
+                // Testar busca de perfil
+                setTimeout(() => testPerfil(), 500);
+                
+            } catch (error) {
+                log(`❌ Erro ao buscar usuário: ${error.message}`, 'error');
+                console.error('Me endpoint error:', error);
+            } finally {
+                meBtn.disabled = false;
+                meBtn.textContent = '👤 Testar /me';
+            }
+        }
+
+        async function testPerfil() {
+            if (!currentTokens) {
+                log('❌ Faça login primeiro', 'error');
+                return;
+            }
+            
+            try {
+                log('👤 Buscando perfil do usuário (/perfis/)...', 'info');
+                
+                const response = await fetch(`${API_URL}/perfis/`, {
+                    headers: {
+                        'Authorization': `Bearer ${currentTokens.access}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorData}`);
+                }
+                
+                const perfilData = await response.json();
+                log('✅ Dados do perfil obtidos com sucesso!', 'success');
+                log(`📋 Perfil: ${JSON.stringify(perfilData, null, 2)}`, 'info');
+                
+            } catch (error) {
+                log(`❌ Erro ao buscar perfil: ${error.message}`, 'error');
+                console.error('Perfil endpoint error:', error);
+            }
+        }
+
+        async function testRefresh() {
+            if (!currentTokens) {
+                log('❌ Faça login primeiro', 'error');
+                return;
+            }
+            
+            const refreshBtn = document.getElementById('refreshBtn');
+            refreshBtn.disabled = true;
+            refreshBtn.textContent = '🔄 Renovando...';
+            
+            try {
+                log('🔄 Renovando token...', 'info');
+                
+                const response = await fetch(`${API_URL}/token/refresh/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ refresh: currentTokens.refresh })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorData}`);
+                }
+                
+                const data = await response.json();
+                
+                log('✅ Token renovado com sucesso!', 'success');
+                log(`📝 Novo Access Token: ${data.access.substring(0, 50)}...`, 'info');
+                
+                // Atualizar token atual
+                currentTokens.access = data.access;
+                localStorage.setItem('access_token', data.access);
+                
+            } catch (error) {
+                log(`❌ Erro ao renovar token: ${error.message}`, 'error');
+                console.error('Refresh error:', error);
+            } finally {
+                refreshBtn.disabled = false;
+                refreshBtn.textContent = '🔄 Testar Refresh';
+            }
+        }
+
+        // Verificar se já temos tokens salvos
+        window.addEventListener('load', () => {
+            const savedToken = localStorage.getItem('access_token');
+            const savedRefresh = localStorage.getItem('refresh_token');
+            
+            if (savedToken && savedRefresh) {
+                currentTokens = { access: savedToken, refresh: savedRefresh };
+                document.getElementById('meBtn').disabled = false;
+                document.getElementById('refreshBtn').disabled = false;
+                log('💾 Tokens encontrados no localStorage', 'info');
+            }
+        });
+    </script>
+</body>
+</html>
